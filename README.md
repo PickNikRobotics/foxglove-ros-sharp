@@ -50,7 +50,7 @@ dotnet add package FoxgloveRosSharp
 Use this when testing local changes before publishing a package:
 
 ```bash
-git clone https://github.com/noah-wardlow/foxglove-ros-sharp.git
+git clone https://github.com/PickNikRobotics/foxglove-ros-sharp.git
 dotnet add reference foxglove-ros-sharp/src/FoxgloveRosSharp/FoxgloveRosSharp.csproj
 ```
 
