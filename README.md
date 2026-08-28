@@ -96,6 +96,22 @@ string publisher = ros.Advertise<String>("/dotnet/chatter");
 ros.Publish(publisher, new String("hello from C#"));
 ```
 
+### Authenticated connections
+
+Set request headers through `RosSocketOptions` when the WebSocket endpoint requires authentication:
+
+```csharp
+var options = new RosSocketOptions();
+options.RequestHeaders["Authorization"] =
+    $"Bearer {Environment.GetEnvironmentVariable("MOVEIT_FRONTEND_KEY")}";
+
+using var ros = new RosSocket("wss://robot.example:3201", options);
+await ros.Connected;
+```
+
+Keep certificate verification enabled. Trust the endpoint certificate through the operating system
+certificate store, or use a certificate signed by a CA that the client already trusts.
+
 ## Services
 
 Use ROS# message classes for the request and response. Both classes should set

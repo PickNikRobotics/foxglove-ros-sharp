@@ -41,7 +41,10 @@ namespace RosSharp.RosBridgeClient.Internal
 
         public bool IsConnected => socket?.State == WebSocketState.Open;
 
-        public async Task ConnectAsync(string url, CancellationToken cancellationToken = default)
+        public async Task ConnectAsync(
+            string url,
+            IEnumerable<KeyValuePair<string, string>>? requestHeaders = null,
+            CancellationToken cancellationToken = default)
         {
             CloseSocket();
 
@@ -54,6 +57,11 @@ namespace RosSharp.RosBridgeClient.Internal
             var ws = new ClientWebSocket();
             ws.Options.AddSubProtocol("foxglove.sdk.v1");
             ws.Options.AddSubProtocol("foxglove.websocket.v1");
+            if (requestHeaders != null)
+            {
+                foreach (KeyValuePair<string, string> header in requestHeaders)
+                    ws.Options.SetRequestHeader(header.Key, header.Value);
+            }
 
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             lock (gate)

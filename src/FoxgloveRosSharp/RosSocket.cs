@@ -34,17 +34,22 @@ namespace RosSharp.RosBridgeClient
 
         public IProtocol protocol;
 
-        public RosSocket(IProtocol transport, SerializerEnum serializer = SerializerEnum.Microsoft)
+        public RosSocket(
+            IProtocol transport,
+            SerializerEnum serializer = SerializerEnum.Microsoft,
+            RosSocketOptions? options = null)
         {
             protocol = transport;
             Protocol = transport;
             SerializerType = serializer;
             HookProtocol();
-            Connected = protocolClient.ConnectAsync(transport.Uri);
+            Connected = protocolClient.ConnectAsync(
+                transport.Uri,
+                options?.RequestHeaders);
         }
 
-        public RosSocket(string uri)
-            : this(new WebSocketNetProtocol(uri))
+        public RosSocket(string uri, RosSocketOptions? options = null)
+            : this(new WebSocketNetProtocol(uri), SerializerEnum.Microsoft, options)
         {
         }
 

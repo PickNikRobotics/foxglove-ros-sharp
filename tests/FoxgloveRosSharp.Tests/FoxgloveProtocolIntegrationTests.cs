@@ -57,6 +57,24 @@ namespace FoxgloveRosSharp.Tests
             await server.WaitAsync(TimeSpan.FromSeconds(5));
         }
 
+        [Fact]
+        public async Task SendsConfiguredRequestHeaders()
+        {
+            int port = GetFreePort();
+            using var listener = new HttpListener();
+            listener.Prefixes.Add($"http://127.0.0.1:{port}/");
+            listener.Start();
+
+            Task<string?> server = CaptureAuthorizationHeader(listener);
+            var options = new RosSocketOptions();
+            options.RequestHeaders["Authorization"] = "Bearer test-token";
+
+            using var ros = new RosSocket($"ws://127.0.0.1:{port}/", options);
+            await ros.Connected.WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.Equal("Bearer test-token", await server.WaitAsync(TimeSpan.FromSeconds(5)));
+        }
+
         private static async Task RunSingleTopicServer(HttpListener listener)
         {
             HttpListenerContext context = await listener.GetContextAsync();
@@ -84,6 +102,18 @@ namespace FoxgloveRosSharp.Tests
 
             await socket.SendAsync(new ArraySegment<byte>(frame), WebSocketMessageType.Binary, true, CancellationToken.None);
             await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "done", CancellationToken.None);
+        }
+
+        private static async Task<string?> CaptureAuthorizationHeader(HttpListener listener)
+        {
+            HttpListenerContext context = await listener.GetContextAsync();
+            string? authorization = context.Request.Headers["Authorization"];
+            HttpListenerWebSocketContext wsContext = await context.AcceptWebSocketAsync("foxglove.sdk.v1");
+            await wsContext.WebSocket.CloseAsync(
+                WebSocketCloseStatus.NormalClosure,
+                "done",
+                CancellationToken.None);
+            return authorization;
         }
 
         private static async Task RunPublishCaptureServer(HttpListener listener)
